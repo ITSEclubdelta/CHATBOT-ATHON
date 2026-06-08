@@ -1,71 +1,70 @@
-# AI Chatbot
+# CHATBOT-ATHON
 
-A minimal, clean chatbot web app that wraps an LLM API. Built with Next.js, TypeScript, and Tailwind CSS.
+Una aplicación web de chatbot minimalista y limpia que utiliza una API de LLM. Construida con Next.js, TypeScript y Tailwind CSS.
 
-## Features
+## Funcionalidades
 
-- Chat UI with auto-scroll and typing indicator
-- Backend API route that calls any OpenAI-compatible model
-- Fixed system prompt (configurable via env var)
-- Short-term conversation memory per browser session (in-memory, last 20 messages)
-- Token-efficient prompt assembly — system prompt is sent once, history is trimmed
-- Usage logging per request (prompt/completion/total tokens)
-- Basic error handling with user-facing messages
+- Interfaz de chat con desplazamiento automático e indicador de escritura
+- Ruta de API en el backend que llama a cualquier modelo compatible con OpenAI
+- Prompt de sistema fijo (configurable mediante variable de entorno)
+- Memoria de conversación a corto plazo por sesión de navegador (en memoria, últimos 20 mensajes)
+- Ensamblado eficiente de prompts — el prompt de sistema se envía una vez y el historial se recorta
+- Registro de uso por solicitud (tokens de prompt/completado/total)
+- Manejo básico de errores con mensajes visibles para el usuario
 
-## Project structure
+## Estructura del proyecto
 
 ```
 app/
-  api/chat/route.ts   — POST handler: validates input, calls LLM, logs usage
-  layout.tsx          — root layout
-  page.tsx            — renders ChatInterface
+  api/chat/route.ts   — Manejador POST: valida entrada, llama al LLM, registra uso
+  layout.tsx          — Layout raíz
+  page.tsx            — Renderiza ChatInterface
 components/
-  ChatInterface.tsx   — chat UI (messages, input, loading, errors)
+  ChatInterface.tsx   — UI del chat (mensajes, entrada, carga, errores)
 lib/
-  session-store.ts    — in-memory Map of message history keyed by session ID
-  llm-client.ts       — OpenAI client + config
-  prompt-builder.ts   — assembles [system, ...history, user] for each request
+  session-store.ts    — Map en memoria del historial de mensajes por ID de sesión
+  llm-client.ts       — Cliente OpenAI + configuración
+  prompt-builder.ts   — Ensambla [sistema, ...historial, usuario] por solicitud
 types/
-  chat.ts             — shared TypeScript types
+  chat.ts             — Tipos TypeScript compartidos
 ```
 
-## Quick start
+## Inicio rápido
 
 ```bash
-# 1. Copy and fill in env vars
+# 1. Copia y completa las variables de entorno
 cp .env.local.example .env.local
-# edit .env.local — set OPENAI_API_KEY at minimum
+# edita .env.local — establece OPENAI_API_KEY como mínimo
 
-# 2. Install dependencies
+# 2. Instala dependencias
 npm install
 
-# 3. Run dev server
+# 3. Inicia el servidor de desarrollo
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Abre [http://localhost:3000](http://localhost:3000).
 
-## Environment variables
+## Variables de entorno
 
-| Variable               | Required | Default              | Description                                  |
-|------------------------|----------|----------------------|----------------------------------------------|
-| `OPENAI_API_KEY`       | Yes      | —                    | API key for OpenAI or compatible provider    |
-| `OPENAI_BASE_URL`      | No       | OpenAI default       | Override for compatible APIs (e.g. Ollama)   |
-| `OPENAI_MODEL`         | No       | `gpt-4o-mini`        | Model identifier                             |
-| `MAX_COMPLETION_TOKENS`| No       | `1024`               | Max tokens in each assistant response        |
-| `SYSTEM_PROMPT`        | No       | See `prompt-builder` | Override the fixed system prompt             |
+| Variable               | Requerida | Por defecto          | Descripción                                           |
+|------------------------|-----------|----------------------|-------------------------------------------------------|
+| `OPENAI_API_KEY`       | Sí        | —                    | Clave de API para OpenAI o proveedor compatible       |
+| `OPENAI_BASE_URL`      | No        | Por defecto OpenAI   | Alternativa para APIs compatibles (e.g. Ollama)       |
+| `OPENAI_MODEL`         | No        | `gpt-4o-mini`        | Identificador del modelo                              |
+| `MAX_COMPLETION_TOKENS`| No        | `1024`               | Máximo de tokens en cada respuesta del asistente      |
+| `SYSTEM_PROMPT`        | No        | Ver `prompt-builder` | Reemplaza el prompt de sistema fijo                   |
 
-## Token efficiency design
+## Diseño de eficiencia de tokens
 
-- The system prompt is **fixed** — same string on every call, enabling prompt caching if the provider supports it.
-- History is **trimmed** to the last 20 messages (10 turns) before assembling each request.
-- Dynamic context (history + new message) is placed **after** the static system prompt, so cached prefixes stay valid.
-- `max_tokens` caps completion length.
+- El prompt de sistema es **fijo** — misma cadena en cada llamada, lo que permite caché de prompts si el proveedor lo soporta.
+- El historial se **recorta** a los últimos 20 mensajes (10 turnos) antes de ensamblar cada solicitud.
+- El contexto dinámico (historial + nuevo mensaje) se coloca **después** del prompt de sistema estático, para que los prefijos cacheados sigan siendo válidos.
+- `max_tokens` limita la longitud de la respuesta.
 
-## Extending
+## Extensión
 
-- **Swap the model provider**: set `OPENAI_BASE_URL` to point at any OpenAI-compatible endpoint (Ollama, Together, Groq, etc.).
-- **Change the persona**: edit `SYSTEM_PROMPT` in `.env.local` or directly in `lib/prompt-builder.ts`.
-- **Persist history**: replace the `Map` in `lib/session-store.ts` with Redis or a database.
-- **Stream responses**: change `llm.chat.completions.create` to use `stream: true` and return a `ReadableStream` from the route handler.
-# CHATBOT-ATHON
+- **Cambiar el proveedor del modelo**: establece `OPENAI_BASE_URL` para apuntar a cualquier endpoint compatible con OpenAI (Ollama, Together, Groq, etc.).
+- **Cambiar la personalidad**: edita `SYSTEM_PROMPT` en `.env.local` o directamente en `lib/prompt-builder.ts`.
+- **Persistir el historial**: reemplaza el `Map` en `lib/session-store.ts` con Redis o una base de datos.
+- **Respuestas en streaming**: cambia `llm.chat.completions.create` para usar `stream: true` y devuelve un `ReadableStream` desde el manejador de ruta.
